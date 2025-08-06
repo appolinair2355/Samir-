@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 from predictor import CardPredictor
 from scheduler import PredictionScheduler
 from models import init_database, db
+from aiohttp import web
+import threading
 
 # Load environment variables
 load_dotenv()
@@ -22,6 +24,7 @@ try:
     API_HASH = os.getenv('API_HASH') or ''
     BOT_TOKEN = os.getenv('BOT_TOKEN') or ''
     ADMIN_ID = int(os.getenv('ADMIN_ID') or '0')
+    PORT = int(os.getenv('PORT') or '10000')
     
     # Validation des variables requises
     if not API_ID or API_ID == 0:
@@ -31,7 +34,7 @@ try:
     if not BOT_TOKEN:
         raise ValueError("BOT_TOKEN manquant")
         
-    print(f"✅ Configuration chargée: API_ID={API_ID}, ADMIN_ID={ADMIN_ID}")
+    print(f"✅ Configuration chargée: API_ID={API_ID}, ADMIN_ID={ADMIN_ID}, PORT={PORT}")
 except Exception as e:
     print(f"❌ Erreur configuration: {e}")
     print("Vérifiez vos variables d'environnement")
@@ -546,74 +549,8 @@ async def show_report_status(event):
 💡 **Note**: Les rapports automatiques sont générés toutes les 20 prédictions mises à jour avec un statut final."""
 
         await event.respond(msg)
-        print(f"Rapport de compteur envoyé à l'admin")
-
-    except Exception as e:
-        print(f"Erreur dans show_report_status: {e}")
-        await event.respond(f"❌ Erreur: {e}")
-
-@client.on(events.NewMessage(pattern='/deploy'))
-async def deploy_package(event):
-    """Generate and send deployment package (admin only)"""
-    try:
-        if event.sender_id != ADMIN_ID:
-            return
-
-        await event.respond("🚀 **Génération du Pack de Déploiement Render.com**\n\n⏳ Création des fichiers optimisés...")
-
-        # Create zip package
-        import zipfile
-        import io
-
-        # Create in-memory zip
-        zip_buffer = io.BytesIO()
-
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            # Add all deployment files
-            files_to_add = [
-                ('render_main.py', 'main.py'),
-                ('render_predictor.py', 'predictor.py'),
-                ('render_requirements.txt', 'requirements.txt'),
-                ('render.yaml', 'render.yaml'),
-                ('README_RENDER.md', 'README.md')
-            ]
-
-            for source_file, zip_name in files_to_add:
-                try:
-                    with open(source_file, 'r', encoding='utf-8') as f:
-                        zip_file.writestr(zip_name, f.read())
-                except Exception as e:
-                    print(f"Erreur ajout fichier {source_file}: {e}")
-
-        zip_buffer.seek(0)
-
-        # Prepare deployment info message
-        deploy_msg = f"""✅ **Pack de déploiement prêt !**
-
-📦 **Contenu du package** :
-• `main.py` - Bot complet avec toutes les commandes (/start, /stats, /reset, /sta, /test_invite)
-• `predictor.py` - Moteur de prédiction avec système de mise à jour automatique
-• `requirements.txt` - Dépendances Python (telethon, aiohttp, python-dotenv)
-• `render.yaml` - Configuration Render avec health checks
-• `README.md` - Guide de déploiement complet avec instructions détaillées
-
-🎯 **Commandes incluses** :
-• `/start` - Démarrage et aide
-• `/stats` - Statistiques de performance
-• `/reset` - Réinitialisation du bot
-• `/sta` - Statut des déclencheurs automatiques
-• `/test_invite` - Test des invitations
-• Prédictions automatiques sur numéros 7, 8
-
-🔧 **Variables d'environnement requises** :
-```
-API_ID = {API_ID}
-API_HASH = {API_HASH}
-BOT_TOKEN = {BOT_TOKEN}
-ADMIN_ID = {ADMIN_ID}
-PORT = 10000
-```
-
+        print(f"Rap
+        
 🌐 **Étapes rapides** :
 1. Uploadez le contenu du ZIP sur GitHub
 2. Créez un Web Service sur render.com
@@ -939,12 +876,43 @@ async def handle_connection_error():
     except Exception as e:
         print(f"Échec de la reconnexion: {e}")
 
+# --- SERVEUR WEB POUR MONITORING ---
+async def health_check(request):
+    """Health check endpoint"""
+    return web.Response(text="Bot is running!", status=200)
+
+async def bot_status(request):
+    """Bot status endpoint"""
+    status = {
+        "bot_online": True,
+        "stat_channel": detected_stat_channel,
+        "display_channel": detected_display_channel,
+        "predictions_active": len(predictor.prediction_status),
+        "total_predictions": len(predictor.status_log)
+    }
+    return web.json_response(status)
+
+async def create_web_server():
+    """Create and start web server"""
+    app = web.Application()
+    app.router.add_get('/', health_check)
+    app.router.add_get('/health', health_check)
+    app.router.add_get('/status', bot_status)
+    
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', PORT)
+    await site.start()
+    print(f"✅ Serveur web démarré sur 0.0.0.0:{PORT}")
+    return runner
+
 # --- LANCEMENT ---
 async def main():
     """Main function to start the bot"""
     print("Démarrage du bot Telegram...")
     print(f"API_ID: {API_ID}")
     print(f"Bot Token configuré: {'Oui' if BOT_TOKEN else 'Non'}")
+    print(f"Port web: {PORT}")
 
     # Validate configuration
     if not API_ID or not API_HASH or not BOT_TOKEN:
@@ -952,9 +920,13 @@ async def main():
         return
 
     try:
+        # Start web server first
+        web_runner = await create_web_server()
+        
         # Start the bot
         if await start_bot():
             print("✅ Bot en ligne et en attente de messages...")
+            print(f"🌐 Accès web: http://0.0.0.0:{PORT}")
             await client.run_until_disconnected()
         else:
             print("❌ Échec du démarrage du bot")
