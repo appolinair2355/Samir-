@@ -1,9 +1,9 @@
 services:
-  - type: web
+  - type: worker
     name: telegram-card-bot
     env: python
     buildCommand: "pip install -r render_requirements.txt"
-    startCommand: "python render_main.py"
+    startCommand: "python main.py"
     plan: free
     region: frankfurt
     envVars:
@@ -15,6 +15,3 @@ services:
         sync: false
       - key: ADMIN_ID
         sync: false
-      - key: PORT
-        fromGroup: web
-    healthCheckPath: "/health"
