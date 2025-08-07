@@ -6,13 +6,13 @@ services:
     startCommand: "python main.py"
     envVars:
       - key: API_ID
-        value: "..."
+        value: "29177661"
       - key: API_HASH
-        value: "..."
+        value: "a8639172fa8d35dbfd8ea46286d349ab"
       - key: BOT_TOKEN
-        value: "..."
+        value: "7722770680:AAEblHwJ13_GebBWBFmIo5ioiGYYgDaP2iQ"
       - key: ADMIN_ID
-        value: "..."
+        value: "1190237801"
       - key: RENDER_DEPLOYMENT
         value: "true"
       - key: PORT
