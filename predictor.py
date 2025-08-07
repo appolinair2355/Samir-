@@ -251,7 +251,7 @@ class CardPredictor:
                         return True, predicted_number
                     else:
                         # Failed prediction - invalid card count
-                        statut = '⭕❌'
+                        statut = '❌❌'
                         self.prediction_status[predicted_number] = statut
                         self.status_log.append((predicted_number, statut))
                         print(f"Prédiction échouée: #{predicted_number} - résultat invalide (cartes incorrectes)")

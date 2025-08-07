@@ -549,8 +549,74 @@ async def show_report_status(event):
 💡 **Note**: Les rapports automatiques sont générés toutes les 20 prédictions mises à jour avec un statut final."""
 
         await event.respond(msg)
-        print(f"Rap
-        
+        print(f"Rapport de compteur envoyé à l'admin")
+
+    except Exception as e:
+        print(f"Erreur dans show_report_status: {e}")
+        await event.respond(f"❌ Erreur: {e}")
+
+@client.on(events.NewMessage(pattern='/deploy'))
+async def deploy_package(event):
+    """Generate and send deployment package (admin only)"""
+    try:
+        if event.sender_id != ADMIN_ID:
+            return
+
+        await event.respond("🚀 **Génération du Pack de Déploiement Render.com**\n\n⏳ Création des fichiers optimisés...")
+
+        # Create zip package
+        import zipfile
+        import io
+
+        # Create in-memory zip
+        zip_buffer = io.BytesIO()
+
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            # Add all deployment files
+            files_to_add = [
+                ('render_main.py', 'main.py'),
+                ('render_predictor.py', 'predictor.py'),
+                ('render_requirements.txt', 'requirements.txt'),
+                ('render.yaml', 'render.yaml'),
+                ('README_RENDER.md', 'README.md')
+            ]
+
+            for source_file, zip_name in files_to_add:
+                try:
+                    with open(source_file, 'r', encoding='utf-8') as f:
+                        zip_file.writestr(zip_name, f.read())
+                except Exception as e:
+                    print(f"Erreur ajout fichier {source_file}: {e}")
+
+        zip_buffer.seek(0)
+
+        # Prepare deployment info message
+        deploy_msg = f"""✅ **Pack de déploiement prêt !**
+
+📦 **Contenu du package** :
+• `main.py` - Bot complet avec toutes les commandes (/start, /stats, /reset, /sta, /test_invite)
+• `predictor.py` - Moteur de prédiction avec système de mise à jour automatique
+• `requirements.txt` - Dépendances Python (telethon, aiohttp, python-dotenv)
+• `render.yaml` - Configuration Render avec health checks
+• `README.md` - Guide de déploiement complet avec instructions détaillées
+
+🎯 **Commandes incluses** :
+• `/start` - Démarrage et aide
+• `/stats` - Statistiques de performance
+• `/reset` - Réinitialisation du bot
+• `/sta` - Statut des déclencheurs automatiques
+• `/test_invite` - Test des invitations
+• Prédictions automatiques sur numéros 7, 8
+
+🔧 **Variables d'environnement requises** :
+```
+API_ID = {API_ID}
+API_HASH = {API_HASH}
+BOT_TOKEN = {BOT_TOKEN}
+ADMIN_ID = {ADMIN_ID}
+PORT = 10000
+```
+
 🌐 **Étapes rapides** :
 1. Uploadez le contenu du ZIP sur GitHub
 2. Créez un Web Service sur render.com

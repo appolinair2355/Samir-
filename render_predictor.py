@@ -176,7 +176,7 @@ class CardPredictor:
                         return True, target_number
                     else:
                         # Failed prediction
-                        statut = '⭕❌'
+                        statut = '❌❌'
                         self.prediction_status[target_number] = statut
                         self.status_log.append((target_number, statut))
                         print(f"Prédiction échouée: Jeu #{target_number}")

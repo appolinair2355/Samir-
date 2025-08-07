@@ -11,7 +11,7 @@ API_ID = int(os.getenv('API_ID', '0'))
 API_HASH = os.getenv('API_HASH', '')
 BOT_TOKEN = os.getenv('BOT_TOKEN', '')
 ADMIN_ID = int(os.getenv('ADMIN_ID', '0'))
-PORT = int(os.getenv('PORT', '10000'))  # Render.com utilise PORT dynamique
+PORT = int(os.getenv('PORT', '10000'))  # Port 10000 par défaut pour Render.com
 
 # Variables d'état
 detected_stat_channel = None
