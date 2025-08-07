@@ -1,20 +1,19 @@
 services:
   - type: worker
-    name: bot-carte-telegram
-    env: python
+    name: mon-bot-telegram
+    runtime: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python render_main.py"
-    plan: free
-    region: frankfurt
+    startCommand: "python main.py"
     envVars:
       - key: API_ID
-        sync: false
+        value: "..."
       - key: API_HASH
-        sync: false
+        value: "..."
       - key: BOT_TOKEN
-        sync: false
-      - key: ID_ADMIN
-        sync: false
+        value: "..."
+      - key: ADMIN_ID
+        value: "..."
+      - key: RENDER_DEPLOYMENT
+        value: "true"
       - key: PORT
-        sync: false
-    healthCheckPath: "/santé"
+        value: "10000"
