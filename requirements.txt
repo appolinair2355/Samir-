@@ -2,4 +2,4 @@ telethon==1.40.0
 python-dotenv==1.1.1
 aiohttp==3.10.11
 PyYAML==6.0.2
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.7
