@@ -1,8 +1,8 @@
 services:
-  - type: web
-    name: telegram-card-bot
+  - type: worker
+    name: bot-carte-telegram
     env: python
-    buildCommand: "pip install -r render_requirements.txt"
+    buildCommand: "pip install -r requirements.txt"
     startCommand: "python render_main.py"
     plan: free
     region: frankfurt
@@ -13,8 +13,8 @@ services:
         sync: false
       - key: BOT_TOKEN
         sync: false
-      - key: ADMIN_ID
+      - key: ID_ADMIN
         sync: false
       - key: PORT
-        fromGroup: web
-    healthCheckPath: "/health"
+        sync: false
+    healthCheckPath: "/santé"
