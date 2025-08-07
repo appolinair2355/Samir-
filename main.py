@@ -25,6 +25,11 @@ try:
     BOT_TOKEN = os.getenv('BOT_TOKEN') or ''
     ADMIN_ID = int(os.getenv('ADMIN_ID') or '0')
     PORT = int(os.getenv('PORT') or '10000')
+        # Configuration pour Replit
+    replit_port = int(os.environ.get('PORT', 8080))
+    os.environ['PORT'] = str(replit_port)
+    
+    logger.info("🚀 TeleFeed Bot démarré pour Replit Always On")
     
     # Validation des variables requises
     if not API_ID or API_ID == 0:
