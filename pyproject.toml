@@ -1,12 +1,15 @@
 [project]
-name = "repl-nix-workspace"
-version = "0.1.0"
-description = "Add your description here"
-requires-python = ">=3.11"
-dependencies = [
-    "aiohttp>=3.12.15",
-    "psycopg2-binary>=2.9.10",
-    "python-dotenv>=1.1.1",
-    "pyyaml>=6.0.2",
-    "telethon>=1.40.0",
+nom="espace de travail repl-nix"
+version="0.1.0"
+description="Ajoutez votre description ici"
+nécessite-python=">=3.11"
+dépendances= [
+  "aiohttp>=3.12.15",
+  "psycopg2-binaire>=2.9.10",
+  "python-dotenv>=1.1.1",
+  "pyyaml>=6.0.2",
+  "téléthon>=1.40.0",
 ]
+
+[tool.poetry]
+package-mode = false
